@@ -26,10 +26,6 @@ class DB
 
     private function formatParam(mixed $param): string
     {
-        if ($param === null) {
-            return 'NULL';
-        }
-        
         if (is_int($param) || is_bool($param)) {
             return (string)(int)$param;
         }
@@ -65,8 +61,12 @@ class DB
 
         $whereParts = [];
         foreach ($conditions as $key => $value) {
-            $formattedValue = $this->formatParam($value);
-            $whereParts[] = "$key = $formattedValue";
+            if ($value === null) {
+                $whereParts[] = "$key IS NULL";
+            } else {
+                $formattedValue = $this->formatParam($value);
+                $whereParts[] = "$key = $formattedValue";
+            }
         }
 
         return " WHERE " . implode(' AND ', $whereParts);
@@ -153,6 +153,6 @@ class DB
     } 
 
     // execute method example
-    $result = $db->execute('SELECT * FROM users WHERE id = 7');
+    $result = $db->execute('SELECT * FROM users WHERE username = "MODIFICATO" OR username = "super_luca"');
     $users = $result->fetch_all(MYSQLI_ASSOC);
 -->
