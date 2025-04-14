@@ -9,7 +9,7 @@ class DB
     private function __construct()
     {
         try {
-            $this->connection = new mysqli('localhost', 'your_user', 'your_password', 'your_database');
+            $this->connection = new mysqli('localhost', 'root', '', 'test');
         } catch (mysqli_sql_exception $e) {
             throw $e;
         }
@@ -59,6 +59,10 @@ class DB
 
     private function buildWhereClause(array $conditions): array
     {
+        if (empty($conditions)) {
+            return ['clause' => '', 'params' => []];
+        }
+
         $whereParts = [];
         $params = [];
         foreach ($conditions as $key => $value) {
@@ -164,4 +168,9 @@ class DB
         $response->getBody()->write(json_encode($newId, true));
         return $response->withHeader("Content-type","application/json")->withStatus(200);
     } 
+
+    // execute method example
+    $stmt = $db->execute('SELECT * FROM users WHERE id = ?', [7]);
+    $result = $stmt->get_result();
+    $users = $result->fetch_all(MYSQLI_ASSOC);
 -->
