@@ -38,7 +38,7 @@ class DB
             return (string)(float)$param;
         }
         
-        return "'" . $this->connection->real_escape_string((string)$param) . "'";
+        return "'" . (string)$param . "'";
     }
 
     public function execute(string $sql): mysqli_result | bool
