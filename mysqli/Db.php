@@ -1,38 +1,38 @@
 <?php
 
-class DB {
+class DB
+{
     private static $instance = null;
     private $connection;
     private $error = null;
 
-    private string $host = 'localhost';
-    private string $db   = 'your_database';
-    private string $user = 'your_user';     
-    private string $pass = 'your_password'; 
-
-    private function __construct() {
+    private function __construct()
+    {
         try {
-            $this->connection = new mysqli($this->host, $this->user, $this->pass, $this->db);
+            $this->connection = new mysqli('localhost', 'your_user', 'your_password', 'your_database');
         } catch (mysqli_sql_exception $e) {
             throw $e;
         }
     }
 
-    public static function getInstance(): DB {
+    public static function getInstance(): DB
+    {
         if (self::$instance === null) {
             self::$instance = new DB();
         }
         return self::$instance;
     }
 
-    private function getType(mixed $var): string {
+    private function getType(mixed $var): string
+    {
         if (is_int($var)) return 'i';
-        if (is_float($var)) return 'd'; 
+        if (is_float($var)) return 'd';
         if (is_bool($var)) return 'i';
         return 's';
     }
 
-    public function execute(string $sql, array $params = []): mysqli_stmt | false {
+    public function execute(string $sql, array $params = []): mysqli_stmt | false
+    {
         try {
             $stmt = $this->connection->prepare($sql);
             if ($stmt === false) {
@@ -57,21 +57,14 @@ class DB {
         }
     }
 
-    private function buildWhereClause(array $conditions): array {
-        if (empty($conditions)) {
-            return ['clause' => '', 'params' => []];
-        }
-
+    private function buildWhereClause(array $conditions): array
+    {
         $whereParts = [];
         $params = [];
         foreach ($conditions as $key => $value) {
-            // Es: <column name> = ?
-            $whereParts[] = "$key = ?";
-            // Add the <column name>'s value to the params array
-            $params[] = $value;
-
-            // The two arrays work in parallel: the index of an element in $whereParts
-            // will be the same as the index of its corresponding value in $params. 
+            $whereParts[] = "$key = ?"; // Es: <column name> = ?
+            $params[] = $value; // Add the <column name>'s value to the params array
+            // The two arrays work in parallel: the index of an element in $whereParts will be the same as the index of its corresponding value in $params.
         }
 
         return [
@@ -80,9 +73,10 @@ class DB {
         ];
     }
 
-    public function select(string $table, array $conditions = []): array | false {
+    public function select(string $table, array $conditions = []): array | false
+    {
         $where = $this->buildWhereClause($conditions);
-        $sql = "SELECT * FROM $table" . $where['clause'];
+        $sql = "SELECT * FROM $table " . $where['clause'];
 
         $stmt = $this->execute($sql, $where['params']);
         if ($stmt === false) {
@@ -95,9 +89,10 @@ class DB {
         return $data;
     }
 
-    public function selectOne(string $table, array $conditions = []): array | null | false {
+    public function selectOne(string $table, array $conditions = []): array | null | false
+    {
         $where = $this->buildWhereClause($conditions);
-        $sql = "SELECT * FROM $table" . $where['clause'] . " LIMIT 1";
+        $sql = "SELECT * FROM $table " . $where['clause'] . " LIMIT 1";
 
         $stmt = $this->execute($sql, $where['params']);
         if ($stmt === false) {
@@ -110,11 +105,8 @@ class DB {
         return $data; // Returns array record or null if it was not found
     }
 
-    public function insert(string $table, array $data): int | false {
-        if (empty($data)) {
-            $this->error = "Missing data.";
-            return false;
-        }
+    public function insert(string $table, array $data): int | false
+    {
         $keys = array_keys($data);
         $columns = implode(', ', $keys);
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
@@ -124,12 +116,8 @@ class DB {
         return $stmt ? $this->connection->insert_id : false;
     }
 
-    public function update(string $table, array $data, array $conditions): int | false {
-         if (empty($data) || empty($conditions)) {
-            $this->error = "Missing Data or conditions.";
-            return false;
-        }
-
+    public function update(string $table, array $data, array $conditions): int | false
+    {
         $setParts = [];
         $params = [];
         foreach ($data as $key => $value) {
@@ -141,26 +129,39 @@ class DB {
         $where = $this->buildWhereClause($conditions);
         $allParams = array_merge($params, $where['params']);
 
-        $sql = "UPDATE $table SET $setClause" . $where['clause'];
+        $sql = "UPDATE $table SET $setClause " . $where['clause'];
 
         $stmt = $this->execute($sql, $allParams);
         return $stmt ? $stmt->affected_rows : false;
     }
 
-    public function delete(string $table, array $conditions): int|false {
-        if (empty($conditions)) {
-            $this->error = "Missing conditions.";
-            return false;
-        }
+    public function delete(string $table, array $conditions): int | false
+    {
         $where = $this->buildWhereClause($conditions);
-        $sql = "DELETE FROM $table" . $where['clause'];
+        $sql = "DELETE FROM $table " . $where['clause'];
 
         $stmt = $this->execute($sql, $where['params']);
         return $stmt ? $stmt->affected_rows : false;
     }
 
-    public function getError(): ?string {
+    public function getError(): ?string
+    {
         return $this->error;
     }
 }
 ?>
+
+<!-- 
+    public function create(Request $request, Response $response, $args)
+    {
+        // curl -X 'POST' -d '{"alunno_id": 3, "titolo": "CREATA ORA", "votazione": 54, "ente": "CREATA ORA"}' http://localhost:8080/alunni/3/certificazioni
+
+        $db = DB::getInstance();
+        $data = json_decode($request->getBody()->getContents(), true);
+
+        $newId = $db->insert("certificazioni", $data);
+
+        $response->getBody()->write(json_encode($newId, true));
+        return $response->withHeader("Content-type","application/json")->withStatus(200);
+    } 
+-->
