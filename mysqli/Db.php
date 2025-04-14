@@ -161,7 +161,7 @@ class DB
     } 
 
     // execute method example
-    $stmt = $db->execute('SELECT * FROM users WHERE id = ?', [7]);
+    $stmt = $db->execute('SELECT * FROM users WHERE id = 7');
     $result = $stmt->get_result();
     $users = $result->fetch_all(MYSQLI_ASSOC);
 -->
