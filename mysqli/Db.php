@@ -72,10 +72,14 @@ class DB
         return " WHERE " . implode(' AND ', $whereParts);
     }
 
-    public function select(string $table, array $conditions = []): array | false
+    public function select(string $table, array $conditions = [], $sortColumn = null, $sortDirection = 'ASC',): array | false
     {
         $where = $this->buildWhereClause($conditions);
         $sql = "SELECT * FROM $table " . $where;
+
+        if ($sortColumn) {
+            $sql .= " ORDER BY $sortColumn $sortDirection";
+        }
 
         $result = $this->execute($sql);
         if ($result === false) {
