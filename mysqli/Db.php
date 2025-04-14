@@ -83,23 +83,16 @@ class DB
         }
 
         $data = $result->fetch_all(MYSQLI_ASSOC);
-        $result->close();
         return $data;
     }
 
     public function selectOne(string $table, array $conditions = []): array | null | false
     {
-        $where = $this->buildWhereClause($conditions);
-        $sql = "SELECT * FROM $table " . $where . " LIMIT 1";
-
-        $result = $this->execute($sql);
+        $result = $this->select($table, $conditions);
         if ($result === false) {
             return false;
         }
-
-        $data = $result->fetch_assoc();
-        $result->close();
-        return $data;
+        return $result[0] ?? null;
     }
 
     public function insert(string $table, array $data): int | false
@@ -161,7 +154,6 @@ class DB
     } 
 
     // execute method example
-    $stmt = $db->execute('SELECT * FROM users WHERE id = 7');
-    $result = $stmt->get_result();
+    $result = $db->execute('SELECT * FROM users WHERE id = 7');
     $users = $result->fetch_all(MYSQLI_ASSOC);
 -->
