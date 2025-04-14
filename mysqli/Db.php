@@ -110,8 +110,12 @@ class DB
     {
         $setParts = [];
         foreach ($data as $key => $value) {
-            $formattedValue = $this->formatParam($value);
-            $setParts[] = "$key = $formattedValue";
+            if ($value === null) {
+                $setParts[] = "$key IS NULL";
+            } else {
+                $formattedValue = $this->formatParam($value);
+                $setParts[] = "$key = $formattedValue";
+            }
         }
         $setClause = implode(', ', $setParts);
 
