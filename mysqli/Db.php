@@ -97,8 +97,7 @@ class DB
 
     public function insert(string $table, array $data): int | false
     {
-        $keys = array_keys($data);
-        $columns = implode(', ', $keys);
+        $columns = implode(', ', array_keys($data));
         $values = array_map([$this, 'formatParam'], array_values($data));
         $valuesStr = implode(', ', $values);
         $sql = "INSERT INTO $table ($columns) VALUES ($valuesStr)";
